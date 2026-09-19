@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Las Aventuras Coquette de Vivi 🎀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pink-light: #ffd1dc;
+            --pink-hot: #ff69b4;
+            --pink-neon: #ff1493;
+            --purple-pastel: #e0b0ff;
+            --white-glow: rgba(255, 255, 255, 0.8);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: white;
+            text-shadow: 0 0 10px var(--pink-hot), 0 0 20px var(--pink-hot);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .score-board {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            color: var(--pink-neon);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
+            margin-bottom: 20px;
+            z-index: 2;
+            border: 2px solid var(--pink-light);
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 700px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+            border: 4px solid white;
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(255, 105, 180, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(to right, #ffb6c1, #ffc0cb);
+            border-top: 4px dashed white;
+        }
+
+        #vivi {
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border: 3px solid var(--pink-hot);
+            border-radius: 40% 40% 50% 50%; /* Cute blob shape */
+            position: absolute;
+            bottom: 40px; /* Right above ground */
+            left: 50px;
+            box-shadow: 0 0 15px var(--pink-hot), inset 0 -5px 10px var(--pink-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: transform 0.1s;
+            z-index: 5;
+        }
+
+        #vivi::before {
+            content: "🎀";
+            position: absolute;
+            top: -12px;
+            left: -5px;
+            font-size: 1.2rem;
+            transform: rotate(-15deg);
+        }
+
+        #vivi::after {
+            content: "(•ᴗ•)";
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #d1498b;
+        }
+
+        .obstacle {
+            width: 30px;
+            height: 45px;
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+            border-radius: 10px 10px 0 0;
+            position: absolute;
+            bottom: 40px; /* On ground */
+            box-shadow: 0 0 10px #8e44ad, inset 0 0 5px rgba(255,255,255,0.5);
+            border: 2px solid white;
+            border-bottom: none;
+            z-index: 4;
+        }
+
+        .obstacle::after {
+            content: '☁️'; /* Obstacles as dark clouds or elements */
+            position: absolute;
+            top: -20px;
+            left: -2px;
+            font-size: 1.2rem;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 230, 240, 0.85);
+            backdrop-filter: blur(3px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .message-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: var(--pink-neon);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px white;
+            line-height: 1.2;
+        }
+
+        .message-subtitle {
+            font-size: 1.2rem;
+            color: #8e44ad;
+            margin-bottom: 20px;
+            max-width: 80%;
+        }
+
+        /* Aesthetic Button */
+        button {
+            background: linear-gradient(45deg, var(--pink-hot), var(--purple-pastel));
+            color: white;
+            border: 3px solid white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.4);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 105, 180, 0.6);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Spooky font for the specific lose text */
+        .lose-text {
+            color: red;
+            text-transform: lowercase; /* Exact match condition */
+            font-family: monospace;
+            font-weight: 900;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px black;
+        }
+
+        /* Instructions */
+        .instructions {
+            position: absolute;
+            bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>✨ Las Aventuras de Vivi ✨</h1>
+    <div class="score-board">Puntos: <span id="score">0</span> / 5</div>
+
+    <div id="game-container">
+        <div class="ground"></div>
+        <div id="vivi"></div>
+        <div id="obstacles-container"></div>
+        
+        <div id="ui-layer">
+            <div id="message-title" class="message-title">¡Hola! Soy Vivi 🎀</div>
+            <div id="message-subtitle" class="message-subtitle">Ayúdame a saltar tocando la pantalla o usando la barra espaciadora.</div>
+            <button id="action-btn">Comenzar a brillar ✨</button>
+        </div>
+    </div>
+    
+    <div class="instructions">Toca el juego o presiona Espacio para saltar</div>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const viviElement = document.getElementById('vivi');
+        const obstaclesContainer = document.getElementById('obstacles-container');
+        const scoreElement = document.getElementById('score');
+        const uiLayer = document.getElementById('ui-layer');
+        const messageTitle = document.getElementById('message-title');
+        const messageSubtitle = document.getElementById('message-subtitle');
+        const actionBtn = document.getElementById('action-btn');
+
+        // Physics & Game Constants
+        let isPlaying = false;
+        let score = 0;
+        const TARGET_SCORE = 5;
+        
+        // Vivi physics
+        const GROUND_LEVEL = 40; // matches css bottom
+        let viviY = GROUND_LEVEL;
+        let velocityY = 0;
+        const GRAVITY = 0.8;
+        const JUMP_STRENGTH = -13;
+        let isJumping = false;
+        
+        // Obstacles config
+        let obstacles = [];
+        let gameLoopId;
+        let frameCount = 0;
+        let nextSpawnRate = 90; // Frames until next obstacle
+
+        // Win Messages Array
+        const winMessages = [
+            "¡Soportaste y devoraste! 💅",
+            "¡Nivel Diosa inalcanzable! ✨",
+            "¡La más pro del barrio! 👑",
+            "¡Ni la NASA tiene esa precisión! 🚀",
+            "¡Sirviendo look y victoria! 💖",
+            "¡Ate and left no crumbs! 🎀"
+        ];
+        let winIndex = 0;
+
+        function jump() {
+            if (!isPlaying) return;
+            if (!isJumping) {
+                isJumping = true;
+                velocityY = JUMP_STRENGTH;
+                viviElement.style.transform = 'scaleY(1.1) scaleX(0.9)'; // Stretch effect
+                setTimeout(() => {
+                    viviElement.style.transform = 'none';
+                }, 150);
+            }
+        }
+
+        // Event Listeners for Jump
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault(); // Prevent scrolling
+                jump();
+            }
+        });
+
+        gameContainer.addEventListener('mousedown', (e) => {
+            if (e.target.tagName !== 'BUTTON') jump();
+        });
+        
+        gameContainer.addEventListener('touchstart', (e) => {
+            if (e.target.tagName !== 'BUTTON') {
+                e.preventDefault();
+                jump();
+            }
+        }, { passive: false });
+
+        function spawnObstacle() {
+            const obsEl = document.createElement('div');
+            obsEl.classList.add('obstacle');
+            
+            // Start obstacle at the right edge of the container
+            const containerWidth = gameContainer.offsetWidth;
+            const obsX = containerWidth;
+            
+            obsEl.style.left = obsX + 'px';
+            obstaclesContainer.appendChild(obsEl);
+            
+            obstacles.push({
+                element: obsEl,
+                x: obsX,
+                passed: false,
+                width: 30,
+                height: 45
+            });
+        }
+
+        function resetGame() {
+            obstacles.forEach(obs => obs.element.remove());
+            obstacles = [];
+            score = 0;
+            scoreElement.innerText = score;
+            viviY = GROUND_LEVEL;
+            velocityY = 0;
+            isJumping = false;
+            viviElement.style.bottom = viviY + 'px';
+            frameCount = 0;
+            nextSpawnRate = 90;
+            
+            uiLayer.classList.add('hidden');
+            isPlaying = true;
+            gameLoop();
+        }
+
+        function gameOver(won) {
+            isPlaying = false;
+            cancelAnimationFrame(gameLoopId);
+            uiLayer.classList.remove('hidden');
+
+            if (won) {
+                // WIN LOGIC
+                messageTitle.className = 'message-title'; // reset to normal aesthetic class
+                messageTitle.innerHTML = winMessages[winIndex];
+                messageSubtitle.innerText = "¡Llegaste a los 5 puntos como una reina!";
+                actionBtn.innerText = "Jugar de nuevo 💖";
+                
+                // Cycle array
+                winIndex = (winIndex + 1) % winMessages.length;
+            } else {
+                // LOSE LOGIC (Exact required text)
+                messageTitle.className = 'lose-text'; // spooky/red class
+                messageTitle.innerText = "te voy a hackear el wasa";
+                messageSubtitle.innerText = "¡Ay no! Vivi chocó con las malas vibras.";
+                actionBtn.innerText = "Intentar otra vez 🥺";
+            }
+        }
+
+        actionBtn.addEventListener('click', () => {
+            resetGame();
+        });
+
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            frameCount++;
+
+            // 1. Update Vivi Physics
+            if (isJumping) {
+                velocityY += GRAVITY;
+                viviY -= velocityY; // Subtract because higher bottom value goes UP visually
+
+                if (viviY <= GROUND_LEVEL) {
+                    viviY = GROUND_LEVEL;
+                    velocityY = 0;
+                    isJumping = false;
+                }
+                viviElement.style.bottom = viviY + 'px';
+            }
+
+            // 2. Spawn obstacles randomly
+            if (frameCount >= nextSpawnRate) {
+                spawnObstacle();
+                frameCount = 0;
+                // Randomize next spawn (between 70 and 130 frames for variability)
+                nextSpawnRate = Math.floor(Math.random() * 60) + 70;
+            }
+
+            // Constants for Vivi's hitbox
+            const viviLeft = 50; 
+            const viviRight = 50 + 50; // left + width
+            const viviBottom = viviY;
+            const viviTop = viviY + 50; // bottom + height
+
+            // 3. Move and process obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                
+                // Speed of obstacles (can increase to make it harder, but keep it casual)
+                obs.x -= 5.5; 
+                obs.element.style.left = obs.x + 'px';
+
+                // Hitbox for obstacle
+                let obsLeft = obs.x;
+                let obsRight = obs.x + obs.width;
+                let obsBottom = GROUND_LEVEL;
+                let obsTop = GROUND_LEVEL + obs.height;
+
+                // Check Collision (AABB)
+                if (
+                    viviRight > obsLeft + 10 &&  // +10 adds a bit of forgiveness margin to the hitboxes
+                    viviLeft < obsRight - 10 &&
+                    viviBottom < obsTop &&
+                    viviTop > obsBottom
+                ) {
+                    // LOST GAME
+                    gameOver(false);
+                    return; 
+                }
+
+                // Check Score Passing
+                if (!obs.passed && obs.x < viviLeft) {
+                    obs.passed = true;
+                    score++;
+                    scoreElement.innerText = score;
+                    
+                    // WIN GAME CHECK
+                    if (score >= TARGET_SCORE) {
+                        gameOver(true);
+                        return;
+                    }
+                }
+
+                // Remove off-screen obstacles to save memory
+                if (obs.x < -50) {
+                    obs.element.remove();
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
